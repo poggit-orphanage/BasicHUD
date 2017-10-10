@@ -3,8 +3,11 @@ namespace aliuly\hud\common;
 use pocketmine\item\Item;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\MainLogger;
+use pocketmine\command\CommandExecutor;
 use pocketmine\command\CommandSender;
 use pocketmine\Player;
+use pocketmine\Server;
+use pocketmine\plugin\Plugin;
 use pocketmine\command\PluginCommand;
 
 use aliuly\hud\common\mc;
@@ -13,18 +16,18 @@ use aliuly\hud\common\mc;
  * My PocketMine Utils class
  */
 abstract class MPMU {
-	/** @var str[] $items Nice names for items */
+	/** @var string[] $items Nice names for items */
 	static protected $items = [];
-	/** @const str VERSION plugin version string */
+	/** @const string VERSION plugin version string */
 	const VERSION = "0.1.0";
 
 	/**
 	 * libcommon library version.  If a version is provided it will check
 	 * the version using apiCheck.
 	 *
-	 * @param str version Version to check
+	 * @param string $version Version to check
 	 *
-	 * @return str|bool
+	 * @return string|bool
 	 */
 	static public function version($version = "") {
 		if ($version == "") return self::VERSION;
@@ -33,9 +36,9 @@ abstract class MPMU {
 	/**
 	 * Used to check the PocketMine API version
 	 *
-	 * @param str version Version to check
+	 * @param string $version Version to check
 	 *
-	 * @return str|bool
+	 * @return string|bool
 	 */
 	static public function apiVersion($version = "") {
 		if ($version == "") return \pocketmine\API_VERSION;
@@ -47,8 +50,8 @@ abstract class MPMU {
 	 *
 	 * >=, <=, <> or !=, =, !|~, <, >
 	 *
-	 * @param str api Installed API version
-	 * @param str version API version to compare against
+	 * @param string $api Installed API version
+	 * @param string $version API version to compare against
 	 *
 	 * @return bool
 	 */
@@ -80,8 +83,8 @@ abstract class MPMU {
 	 * Given an pocketmine\item\Item object, it returns a friendly name
 	 * for it.
 	 *
-	 * @param Item item
-	 * @return str
+	 * @param Item $item
+	 * @return string
 	 */
 	static public function itemName(Item $item) {
 		$n = $item->getName();
@@ -101,10 +104,10 @@ abstract class MPMU {
 	/**
 	 * Returns a localized string for the gamemode
 	 *
-	 * @param int mode
-	 * @return str
+	 * @param int $mode
+	 * @return string
 	 */
-	static public function gamemodeStr($mode) {
+	static public function gamemodeStr($mode) : string {
 		if (class_exists(__NAMESPACE__."\\mc",false)) {
 			switch ($mode) {
 				case 0: return mc::_("Survival");
@@ -126,11 +129,11 @@ abstract class MPMU {
 	 * Check's player or sender's permissions and shows a message if appropriate
 	 *
 	 * @param CommandSender $sender
-	 * @param str $permission
+	 * @param string $permission
 	 * @param bool $msg If false, no message is shown
 	 * @return bool
 	 */
-	static public function access(CommandSender $sender, $permission,$msg=true) {
+	static public function access(CommandSender $sender, $permission,$msg=true) : bool{
 		if($sender->hasPermission($permission)) return true;
 		if ($msg)
 			$sender->sendMessage(mc::_("You do not have permission to do that."));
@@ -143,7 +146,7 @@ abstract class MPMU {
 	 * @param bool $msg If false, no message is shown
 	 * @return bool
 	 */
-	static public function inGame(CommandSender $sender,$msg = true) {
+	static public function inGame(CommandSender $sender,$msg = true) : bool{
 		if (!($sender instanceof Player)) {
 			if ($msg) $sender->sendMessage(mc::_("You can only do this in-game"));
 			return false;
@@ -153,10 +156,10 @@ abstract class MPMU {
 	/**
 	 * Takes a player and creates a string suitable for indexing
 	 *
-	 * @param Player|str $player - Player to index
-	 * @return str
+	 * @param Player|string $player - Player to index
+	 * @return string
 	 */
-	static public function iName($player) {
+	static public function iName($player) : string{
 		if ($player instanceof Player) {
 			$player = strtolower($player->getName());
 		}
@@ -166,8 +169,8 @@ abstract class MPMU {
 	 * Lile file_get_contents but for a Plugin resource
 	 *
 	 * @param Plugin $plugin
-	 * @param str $filename
-	 * @return str|null
+	 * @param string $filename
+	 * @return string|null
 	 */
 	static public function getResourceContents($plugin,$filename) {
 		$fp = $plugin->getResource($filename);
@@ -182,12 +185,12 @@ abstract class MPMU {
 	 * Call a plugin's function
 	 *
 	 * @param Server $server - pocketmine server instance
-	 * @param str $plug - plugin to call
-	 * @param str $method - method to call
+	 * @param string $plug - plugin to call
+	 * @param string $method - method to call
 	 * @param mixed $default - If the plugin does not exist or it is not enable, this value uis returned
 	 * @return mixed
 	 */
-	static public function callPlugin($server,$plug,$method,$args,$default = null) {
+	static public function callPlugin(Server $server,$plug,$method,$args,$default = null) {
 		if (($plugin = $server->getPluginManager()->getPlugin($plug)) !== null
 			 && $plugin->isEnabled()) {
 			$fn = [ $plugin, $method ];
@@ -200,10 +203,10 @@ abstract class MPMU {
 	 *
 	 * @param Plugin $plugin - plugin that "owns" the command
 	 * @param CommandExecutor $executor - object that will be called onCommand
-	 * @param str $cmd - Command name
+	 * @param string $cmd - Command name
 	 * @param array $yaml - Additional settings for this command.
 	 */
-	static public function addCommand($plugin, $executor, $cmd, $yaml) {
+	static public function addCommand(Plugin $plugin, CommandExecutor $executor, $cmd, $yaml) {
 		$newCmd = new PluginCommand($cmd,$plugin);
 		if (isset($yaml["description"]))
 			$newCmd->setDescription($yaml["description"]);
@@ -213,7 +216,7 @@ abstract class MPMU {
 			$aliasList = [];
 			foreach($yaml["aliases"] as $alias) {
 				if(strpos($alias,":")!== false) {
-					$this->owner->getLogger()->info("Unable to load alias $alias");
+					$plugin->getLogger()->info("Unable to load alias $alias");
 					continue;
 				}
 				$aliasList[] = $alias;
@@ -235,7 +238,7 @@ abstract class MPMU {
 	 * Currently only supports SimpleAuth and BasicHUD.
 	 *
 	 * @param Player $player
-	 * @param str $msg
+	 * @param string $msg
 	 */
 	static public function sendPopup($player,$msg) {
 		$pm = $player->getServer()->getPluginManager();

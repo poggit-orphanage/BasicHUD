@@ -52,7 +52,7 @@ class PopupTask extends PluginTask{
 		return $this->owner;
 	}
 
-	public function onRun($currentTick){
+	public function onRun(int $currentTick) {
 		$plugin = $this->getPlugin();
 		if ($plugin->isDisabled()) return;
 
@@ -314,7 +314,7 @@ class Main extends PluginBase implements Listener,CommandExecutor {
 		$this->sendPopup($ev->getPlayer(),MPMU::itemName($ev->getItem()),2);
 	}
 
-	public function onCommand(CommandSender $sender, Command $cmd, $label, array $args) {
+	public function onCommand(CommandSender $sender, Command $cmd, string $label, array $args) : bool {
 		if ($cmd->getName() != "hud") return false;
 		if (!MPMU::inGame($sender)) return true;
 		$n = strtolower($sender->getName());

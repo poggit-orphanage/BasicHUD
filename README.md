@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/Muirfield/BasicHUD/master/media/hud.jpg" style="width:64px;height:64px" width="64" height="64"/>
+<img src="https://raw.githubusercontent.com/alejandroliu/pocketmine-plugins/master/Media/hud.jpg" style="width:64px;height:64px" width="64" height="64"/>
 
 BasicHUD
 ========
@@ -10,30 +10,9 @@ BasicHUD
 * OptionalPlugins: -
 * Categories: Informational
 * Plugin Access: Other Plugins
+* WebSite: https://github.com/alejandroliu/pocketmine-plugins/tree/master/BasicHUD
 
 ## Overview
-
-<!-- php: $v_forum_thread = "http://forums.pocketmine.net/threads/basichud.1222/"; -->
-<!-- template: prologue.md -->
-
-**DO NOT POST QUESTION/BUG-REPORTS/REQUESTS IN THE REVIEWS**
-
-It is difficult to carry a conversation in the reviews.  If you
-have a question/bug-report/request please use the
-[Thread](http://forums.pocketmine.net/threads/basichud.1222/) for
-that.  You are more likely to get a response and help that way.
-
-**NOTE:**
-
-This documentation was last updated for version **1.0.6**.
-
-Please go to
-[github](https://github.com/alejandroliu/pocketmine-plugins/tree/master/BasicHUD)
-for the most up-to-date documentation.
-
-You can also download this plugin from this [page](https://github.com/alejandroliu/pocketmine-plugins/releases/tag/BasicHUD-1.0.6).
-
-<!-- template-end -->
 
 This plugin lets you configure a basic Heads-Up Display (HUD) for
 players.
@@ -181,6 +160,8 @@ if (($hud = $this->getServer()->getPluginManager()->getPlugin("BasicHUD")) !== n
 
 # Changes
 
+* 1.0.6-2
+  * Updated for recent PocketMine API changes
 * 1.0.6:
   * Fixed vars-example (money issues thanks @vertx)
   * Display item selected onItemHeld (incomplete)
@@ -211,7 +192,7 @@ if (($hud = $this->getServer()->getPluginManager()->getPlugin("BasicHUD")) !== n
 # Copyright
 
     BasicHUD
-    Copyright (C) 2015 Alejandro Liu
+    Copyright (C) 2015-2017 Alejandro Liu
     All Rights Reserved.
 
     This program is free software: you can redistribute it and/or modify

@@ -1,5 +1,6 @@
 <?php
 namespace aliuly\hud\common;
+use pocketmine\plugin\Plugin;
 
 /**
  * Simple translation class in the style of **gettext**.
@@ -21,7 +22,7 @@ namespace aliuly\hud\common;
  * * mc::n(mc::\_("singular form"),mc::\_("Plural form"),$count)
  */
 abstract class mc {
-	/** @var str[] $txt Message translations */
+	/** @var string[] $txt Message translations */
 	public static $txt = [];
 	/** Main translation function
 	 *
@@ -30,8 +31,8 @@ abstract class mc {
 	 * These are inserted from the following arguments.  Use "%%" to insert
 	 * a single "%".
 	 *
-	 * @param str[] $args - messages
-	 * @return str translated string
+	 * @param string[] $args - messages
+	 * @return string translated string
 	 */
 	public static function _(...$args) {
 		$fmt = array_shift($args);
@@ -50,10 +51,10 @@ abstract class mc {
 	/**
 	 * Plural and singular forms.
 	 *
-	 * @param str $a - Singular form
-	 * @param str $b - Plural form
+	 * @param string $a - Singular form
+	 * @param string $b - Plural form
 	 * @param int $c - the number to test to select between $a or $b
-	 * @return str - Either plural or singular forms depending on the value of $c
+	 * @return string - Either plural or singular forms depending on the value of $c
 	 */
 	public static function n($a,$b,$c) {
 		return $c == 1 ? $a : $b;
@@ -62,9 +63,9 @@ abstract class mc {
 	 * Load a message file for a PocketMine plugin.  Only uses .ini files.
 	 *
 	 * @param Plugin $plugin - owning plugin
-	 * @param str $path - output of $plugin->getFile()
+	 * @param string $path - output of $plugin->getFile()
 	 */
-	public static function plugin_init($plugin,$path) {
+	public static function plugin_init(Plugin $plugin, $path) {
 		if (file_exists($plugin->getDataFolder()."messages.ini")) {
 			self::load($plugin->getDataFolder()."messages.ini");
 			return;
@@ -73,12 +74,13 @@ abstract class mc {
 				$plugin->getServer()->getProperty("settings.language").
 				".ini";
 		if (!file_exists($msgs)) return;
-		mc::load($msgs);
+		self::load($msgs);
 	}
 	/**
 	 * Load the specified message catalogue.
 	 * Can read .ini or .po files.
-	 * @param str $f - Filename to load
+	 * @param string $f - Filename to load
+	 * @return bool|string
 	 */
 	public static function load($f) {
 		$potxt = "\n".file_get_contents($f)."\n";
@@ -91,11 +93,12 @@ abstract class mc {
 					 '/^\s*"(.+)"\s*=\s*"(.+)"\s*$/m'] as $re) {
 			$c = preg_match_all($re,$potxt,$mm);
 			if ($c) {
+				$a = $b = '';
 				for ($i=0;$i<$c;++$i) {
 					if ($mm[2][$i] == "") continue;
 					eval('$a = "'.$mm[1][$i].'";');
 					eval('$b = "'.$mm[2][$i].'";');
-					mc::$txt[$a] = $b;
+					self::$txt[$a] = $b;
 				}
 				return $c;
 			}
