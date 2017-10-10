@@ -3,6 +3,7 @@
  ** CONFIG:main
  **/
 namespace aliuly\hud;
+
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
 use pocketmine\Player;
@@ -21,25 +22,28 @@ use pocketmine\command\Command;
 use aliuly\hud\common\mc;
 use aliuly\hud\common\MPMU;
 
-interface Formatter {
-	static public function formatString(Main $plugin,$format,Player $player);
+interface Formatter{
+	static public function formatString(Main $plugin, $format, Player $player);
 }
-abstract class FixedFormat implements Formatter {
-	static public function formatString(Main $plugin,$format,Player $player) {
+
+abstract class FixedFormat implements Formatter{
+	static public function formatString(Main $plugin, $format, Player $player){
 		return $format;
 	}
 }
-abstract class PhpFormat implements Formatter {
-	static public function formatString(Main $plugin,$format,Player $player) {
+
+abstract class PhpFormat implements Formatter{
+	static public function formatString(Main $plugin, $format, Player $player){
 		ob_start();
-		eval("?>".$format);
+		eval("?>" . $format);
 		return ob_get_clean();
 	}
 }
-abstract class StrtrFormat implements Formatter {
-	static public function formatString(Main $plugin,$format,Player $player) {
+
+abstract class StrtrFormat implements Formatter{
+	static public function formatString(Main $plugin, $format, Player $player){
 		$vars = $plugin->getVars($player);
-		return strtr($format,$vars);
+		return strtr($format, $vars);
 	}
 }
 
@@ -52,60 +56,60 @@ class PopupTask extends PluginTask{
 		return $this->owner;
 	}
 
-	public function onRun(int $currentTick) {
+	public function onRun(int $currentTick){
 		$plugin = $this->getPlugin();
-		if ($plugin->isDisabled()) return;
+		if($plugin->isDisabled()) return;
 
-		foreach ($plugin->getServer()->getOnlinePlayers() as $pl) {
-			if (!$pl->hasPermission("basichud.user")) continue;
+		foreach($plugin->getServer()->getOnlinePlayers() as $pl){
+			if(!$pl->hasPermission("basichud.user")) continue;
 			$msg = $plugin->getMessage($pl);
-			if ($msg !== null) $pl->sendPopup($msg);
+			if($msg !== null) $pl->sendPopup($msg);
 		}
 	}
 
 }
 
-class Main extends PluginBase implements Listener,CommandExecutor {
-	protected $_getMessage;		// Message function (to disabled)
-	protected $_getVars;			// Customize variables
+class Main extends PluginBase implements Listener, CommandExecutor{
+	protected $_getMessage;        // Message function (to disabled)
+	protected $_getVars;            // Customize variables
 
-	protected $format;				// HUD format
-	protected $sendPopup;			// Message to popup through API
-	protected $disabled;			// HUD disabled by command
-	protected $perms;					// Attachable permissions
-	protected $consts;				// These are constant variables...
-	protected $perms_cache;		// Permissions cache
+	protected $format;                // HUD format
+	protected $sendPopup;            // Message to popup through API
+	protected $disabled;            // HUD disabled by command
+	protected $perms;                    // Attachable permissions
+	protected $consts;                // These are constant variables...
+	protected $perms_cache;        // Permissions cache
 
-	static public function pickFormatter($format) {
-		if (strpos($format,"<?php") !== false|| strpos($format,"<?=") !== false) {
-			return __NAMESPACE__."\\PhpFormat";
+	static public function pickFormatter($format){
+		if(strpos($format, "<?php") !== false || strpos($format, "<?=") !== false){
+			return __NAMESPACE__ . "\\PhpFormat";
 		}
-		if (strpos($format,"{") !== false && strpos($format,"}")) {
-			return __NAMESPACE__."\\StrtrFormat";
+		if(strpos($format, "{") !== false && strpos($format, "}")){
+			return __NAMESPACE__ . "\\StrtrFormat";
 		}
-		return __NAMESPACE__."\\FixedFormat";
+		return __NAMESPACE__ . "\\FixedFormat";
 	}
 
-	static public function bearing($deg) {
+	static public function bearing($deg){
 		// Determine bearing
-		if (22.5 <= $deg && $deg < 67.5) {
+		if(22.5 <= $deg && $deg < 67.5){
 			return "NW";
-		} elseif (67.5 <= $deg && $deg < 112.5) {
+		}elseif(67.5 <= $deg && $deg < 112.5){
 			return "N";
-		} elseif (112.5 <= $deg && $deg < 157.5) {
+		}elseif(112.5 <= $deg && $deg < 157.5){
 			return "NE";
-		} elseif (157.5 <= $deg && $deg < 202.5) {
+		}elseif(157.5 <= $deg && $deg < 202.5){
 			return "E";
-		} elseif (202.5 <= $deg && $deg < 247.5) {
+		}elseif(202.5 <= $deg && $deg < 247.5){
 			return "SE";
-		} elseif (247.5 <= $deg && $deg < 292.5) {
+		}elseif(247.5 <= $deg && $deg < 292.5){
 			return "S";
-		} elseif (292.5 <= $deg && $deg < 337.5) {
+		}elseif(292.5 <= $deg && $deg < 337.5){
 			return "SW";
-		} else {
+		}else{
 			return "W";
 		}
-		return (int)$deg;
+		return (int) $deg;
 	}
 
 	/**
@@ -125,70 +129,70 @@ class Main extends PluginBase implements Listener,CommandExecutor {
 		return $contents;
 	}
 
-	private function changePermission($player,$perm,$bool) {
+	private function changePermission($player, $perm, $bool){
 		$n = strtolower($player->getName());
-		if (!isset($this->perms[$n])) {
+		if(!isset($this->perms[$n])){
 			$this->perms[$n] = $player->addAttachment($this);
 		}
 		$attach = $this->perms[$n];
-		$attach->setPermission($perm,$bool);
-		if (isset($this->perms_cache[$n])) unset($this->perms_cache[$n]);
+		$attach->setPermission($perm, $bool);
+		if(isset($this->perms_cache[$n])) unset($this->perms_cache[$n]);
 	}
 
-	public function getMessage($player) {
+	public function getMessage($player){
 		$fn = $this->_getMessage;
-		return $fn($this,$player);
+		return $fn($this, $player);
 	}
 
-	public function getVars($player) {
+	public function getVars($player){
 		$vars = $this->consts;
-		foreach ([
-				"{tps}" => $this->getServer()->getTicksPerSecond(),
-				"{player}" => $player->getName(),
-				"{world}" => $player->getLevel()->getName(),
-				"{x}" => (int)$player->getX(),
-				"{y}" => (int)$player->getY(),
-				"{z}" => (int)$player->getZ(),
-				"{yaw}" => (int)$player->getYaw(),
-				"{pitch}" => (int)$player->getPitch(),
-				"{bearing}" => self::bearing($player->getYaw()),
-			] as $a => $b) {
+		foreach([
+					"{tps}" => $this->getServer()->getTicksPerSecond(),
+					"{player}" => $player->getName(),
+					"{world}" => $player->getLevel()->getName(),
+					"{x}" => (int) $player->getX(),
+					"{y}" => (int) $player->getY(),
+					"{z}" => (int) $player->getZ(),
+					"{yaw}" => (int) $player->getYaw(),
+					"{pitch}" => (int) $player->getPitch(),
+					"{bearing}" => self::bearing($player->getYaw()),
+				] as $a => $b){
 			$vars[$a] = $b;
 		}
-  	$fn = $this->_getVars;
-		$fn($this,$vars,$player);
+		$fn = $this->_getVars;
+		$fn($this, $vars, $player);
 		return $vars;
 	}
 
-	public function defaultGetMessage($player) {
+	public function defaultGetMessage($player){
 		$n = strtolower($player->getName());
-		if (isset($this->sendPopup[$n])) {
+		if(isset($this->sendPopup[$n])){
 			// An API user wants to post a Popup...
-			list($msg,$timer) = $this->sendPopup[$n];
-			if (microtime(true) < $timer) return $msg;
+			list($msg, $timer) = $this->sendPopup[$n];
+			if(microtime(true) < $timer) return $msg;
 			unset($this->sendPopup[$n]);
 		}
-		if (isset($this->disabled[$n])) return null;
+		if(isset($this->disabled[$n])) return null;
 
 		// Manage custom groups
-		if (is_array($this->format[0])) {
-			if (!isset($this->perms_cache[$n])) {
+		if(is_array($this->format[0])){
+			if(!isset($this->perms_cache[$n])){
 				$i = 0;
-				foreach ($this->format as $rr) {
-					list($rank,$fmt,$formatter) = $rr;
-					if ($player->hasPermission("basichud.rank.".$rank)) {
+				foreach($this->format as $rr){
+					list($rank, $fmt, $formatter) = $rr;
+					if($player->hasPermission("basichud.rank." . $rank)){
 						$this->perms_cache[$n] = $i;
 						break;
 					}
 					++$i;
 				}
-			} else {
-				list($rank,$fmt,$formatter) = $this->format[$rank = $this->perms_cache[$n]];
+			}else{
+				list($rank, $fmt, $formatter) = $this->format[$rank = $this->perms_cache[$n]];
 			}
-		} else {
-			list($fmt,$formatter) = $this->format;
+		}else{
+			list($fmt, $formatter) = $this->format;
 		}
-		$txt = $formatter::formatString($this,$fmt,$player);
+		$txt = $formatter::formatString($this, $fmt, $player);
 		return $txt;
 	}
 
@@ -197,21 +201,21 @@ class Main extends PluginBase implements Listener,CommandExecutor {
 		$this->sendPopup = [];
 		$this->perms = [];
 
-		if (!is_dir($this->getDataFolder())) mkdir($this->getDataFolder());
+		if(!is_dir($this->getDataFolder())) mkdir($this->getDataFolder());
 		/* Save default resources */
-		$this->saveResource("message-example.php",true);
-		$this->saveResource("vars-example.php",true);
-		mc::plugin_init($this,$this->getFile());
+		$this->saveResource("message-example.php", true);
+		$this->saveResource("vars-example.php", true);
+		mc::plugin_init($this, $this->getFile());
 
 		// These are constants that should be pre calculated
 		$this->consts = [
 			"{BasicHUD}" => $this->getDescription()->getFullName(),
 			"{MOTD}" => $this->getServer()->getMotd(),
-			"{10SPACE}" => str_repeat(" ",10),
-			"{20SPACE}" => str_repeat(" ",20),
-			"{30SPACE}" => str_repeat(" ",30),
-			"{40SPACE}" => str_repeat(" ",40),
-			"{50SPACE}" => str_repeat(" ",50),
+			"{10SPACE}" => str_repeat(" ", 10),
+			"{20SPACE}" => str_repeat(" ", 20),
+			"{30SPACE}" => str_repeat(" ", 30),
+			"{40SPACE}" => str_repeat(" ", 40),
+			"{50SPACE}" => str_repeat(" ", 50),
 			"{NL}" => "\n",
 			"{BLACK}" => TextFormat::BLACK,
 			"{DARK_BLUE}" => TextFormat::DARK_BLUE,
@@ -246,40 +250,41 @@ class Main extends PluginBase implements Listener,CommandExecutor {
 			"format" => "{GREEN}{BasicHUD} {WHITE}{world} ({x},{y},{z}) {bearing}",
 		];
 
-		$cf = (new Config($this->getDataFolder()."config.yml",
-								Config::YAML,$defaults))->getAll();
+		$cf = (new Config($this->getDataFolder() . "config.yml",
+			Config::YAML, $defaults))->getAll();
 
-		if (is_array($cf["format"])) {
+		if(is_array($cf["format"])){
 			// Multiple format specified...
 			// save them and also register the appropriate permissions
 			$this->format = [];
-			foreach ($cf["format"] as $rank=>$fmt) {
-				$this->format[] = [ $rank, $fmt, self::pickFormatter($fmt) ];
-				$p = new Permission("basichud.rank.".$rank,
-										  "BasicHUD format ".$rank, false);
+			foreach($cf["format"] as $rank => $fmt){
+				$this->format[] = [$rank, $fmt, self::pickFormatter($fmt)];
+				$p = new Permission("basichud.rank." . $rank,
+					"BasicHUD format " . $rank, false);
 				$this->getServer()->getPluginManager()->addPermission($p);
 			}
-		} else {
+		}else{
 			// Single format only
-			$this->format = [ $cf["format"], self::pickFormatter($cf["format"]) ];
+			$this->format = [$cf["format"], self::pickFormatter($cf["format"])];
 		}
 		$code = '$this->_getMessage = function($plugin,$player){';
-		if (file_exists($this->getDataFolder()."message.php")) {
-			$code .= file_get_contents($this->getDataFolder()."message.php");
-		} else {
+		if(file_exists($this->getDataFolder() . "message.php")){
+			$code .= file_get_contents($this->getDataFolder() . "message.php");
+		}else{
 			$code .= $this->getResourceContents("message-example.php");
 		}
 		$code .= '};';
 		eval($code);
 
-		if (file_exists($this->getDataFolder()."vars.php")) {
-			$code = '$this->_getVars = function($plugin,&$vars,$player){' ."\n".
-					file_get_contents($this->getDataFolder()."vars.php").
-					'};'."\n";
+		if(file_exists($this->getDataFolder() . "vars.php")){
+			$code = '$this->_getVars = function($plugin,&$vars,$player){' . "\n" .
+				file_get_contents($this->getDataFolder() . "vars.php") .
+				'};' . "\n";
 			eval($code);
-		} else {
+		}else{
 			// Empty function (this means we do not need to test _getVars)
-			$this->_getVars = function(){};
+			$this->_getVars = function(){
+			};
 		}
 		$this->getServer()->getScheduler()->scheduleRepeatingTask(new PopupTask($this), $cf["ticks"]);
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -287,88 +292,93 @@ class Main extends PluginBase implements Listener,CommandExecutor {
 
 	// We clear the permissions cache in the event of a command
 	// next time we schedule to fetch the HUD message it will be recomputed
-  private function onCmdEvent() {
+	private function onCmdEvent(){
 		$this->perms_cache = [];
 	}
-	public function onPlayerCmd(PlayerCommandPreprocessEvent $ev) {
-			$this->onCmdEvent();
-	}
-	public function onRconCmd(RemoteServerCommandEvent $ev) {
+
+	public function onPlayerCmd(PlayerCommandPreprocessEvent $ev){
 		$this->onCmdEvent();
 	}
-	public function onConsoleCmd(ServerCommandEvent $ev) {
+
+	public function onRconCmd(RemoteServerCommandEvent $ev){
 		$this->onCmdEvent();
 	}
-	public function onQuit(PlayerQuitEvent $ev) {
+
+	public function onConsoleCmd(ServerCommandEvent $ev){
+		$this->onCmdEvent();
+	}
+
+	public function onQuit(PlayerQuitEvent $ev){
 		$n = strtolower($ev->getPlayer()->getName());
-		if (isset($this->perms_cache[$n])) unset($this->perms_cache[$n]);
-		if (isset($this->sendPopup[$n])) unset($this->sendPopup[$n]);
-		if (isset($this->disabled[$n])) unset($this->disabled[$n]);
-		if (isset($this->perms[$n])) {
+		if(isset($this->perms_cache[$n])) unset($this->perms_cache[$n]);
+		if(isset($this->sendPopup[$n])) unset($this->sendPopup[$n]);
+		if(isset($this->disabled[$n])) unset($this->disabled[$n]);
+		if(isset($this->perms[$n])){
 			$attach = $this->perms[$n];
 			unset($this->perms[$n]);
 			$ev->getPlayer()->removeAttachment($attach);
 		}
 	}
+
 	public function onItemHeld(PlayerItemHeldEvent $ev){
-		$this->sendPopup($ev->getPlayer(),MPMU::itemName($ev->getItem()),2);
+		$this->sendPopup($ev->getPlayer(), MPMU::itemName($ev->getItem()), 2);
 	}
 
-	public function onCommand(CommandSender $sender, Command $cmd, string $label, array $args) : bool {
-		if ($cmd->getName() != "hud") return false;
-		if (!MPMU::inGame($sender)) return true;
+	public function onCommand(CommandSender $sender, Command $cmd, string $label, array $args) : bool{
+		if($cmd->getName() != "hud") return false;
+		if(!MPMU::inGame($sender)) return true;
 		$n = strtolower($sender->getName());
-		if (count($args) == 0) {
-			if (isset($this->disabled[$n])) {
+		if(count($args) == 0){
+			if(isset($this->disabled[$n])){
 				$sender->sendMessage(mc::_("HUD is OFF"));
 				return true;
 			}
-			if (is_array($this->format[0])) {
-				foreach ($this->format as $rr) {
-					list($rank,,) = $rr;
-					if ($sender->hasPermission("basichud.rank.".$rank)) break;
+			if(is_array($this->format[0])){
+				foreach($this->format as $rr){
+					list($rank, ,) = $rr;
+					if($sender->hasPermission("basichud.rank." . $rank)) break;
 				}
-				$sender->sendMessage(mc::_("HUD using format %1%",$rank));
+				$sender->sendMessage(mc::_("HUD using format %1%", $rank));
 				$fl = [];
-				foreach ($this->format as $rr) {
-					list($rank,,) = $rr;
+				foreach($this->format as $rr){
+					list($rank, ,) = $rr;
 					$fl[] = $rank;
 				}
-				if ($sender->hasPermission("basichud.cmd.switch")) {
+				if($sender->hasPermission("basichud.cmd.switch")){
 					$sender->sendMessage(mc::_("Available formats: %1%",
-												implode(", ",$fl)));
+						implode(", ", $fl)));
 				}
 				return true;
 			}
 			$sender->sendMessage(mc::_("HUD is ON"));
 			return true;
 		}
-		if (count($args) != 1) return false;
+		if(count($args) != 1) return false;
 		$mode = strtolower(array_shift($args));
-		if (is_array($this->format[0])) {
+		if(is_array($this->format[0])){
 			// Check if the input matches any of the ranks...
-			foreach ($this->format as $rr1) {
-				list($rank,,) = $rr1;
-				if (strtolower($rank) == $mode) {
+			foreach($this->format as $rr1){
+				list($rank, ,) = $rr1;
+				if(strtolower($rank) == $mode){
 					// OK, user wants to switch to this format...
-					if (!MPMU::access($sender,"basichud.cmd.switch")) return true;
-					foreach ($this->format as $rr2) {
-						list($rn,,) = $rr2;
-						if ($rank == $rn) {
-							$this->changePermission($sender,"basichud.rank.".$rn,true);
-						} else {
-							$this->changePermission($sender,"basichud.rank.".$rn,false);
+					if(!MPMU::access($sender, "basichud.cmd.switch")) return true;
+					foreach($this->format as $rr2){
+						list($rn, ,) = $rr2;
+						if($rank == $rn){
+							$this->changePermission($sender, "basichud.rank." . $rn, true);
+						}else{
+							$this->changePermission($sender, "basichud.rank." . $rn, false);
 						}
 					}
-					$sender->sendMessage(mc::_("Switching to format %1%",$rank));
+					$sender->sendMessage(mc::_("Switching to format %1%", $rank));
 					return true;
 				}
 			}
 		}
-		if (!MPMU::access($sender,"basichud.cmd.toggle")) return true;
-		$mode = filter_var($mode,FILTER_VALIDATE_BOOLEAN);
-		if ($mode) {
-			if (isset($this->disabled[$n])) unset($this->disabled[$n]);
+		if(!MPMU::access($sender, "basichud.cmd.toggle")) return true;
+		$mode = filter_var($mode, FILTER_VALIDATE_BOOLEAN);
+		if($mode){
+			if(isset($this->disabled[$n])) unset($this->disabled[$n]);
 			$sender->sendMessage(mc::_("Turning on HUD"));
 			return true;
 		}
@@ -380,14 +390,14 @@ class Main extends PluginBase implements Listener,CommandExecutor {
 	/**
 	 * @API
 	 */
-	public function sendPopup($player,$msg,$length=3) {
-		if ($this->isEnabled()) {
-			if ($player->hasPermission("basichud.user")) {
+	public function sendPopup($player, $msg, $length = 3){
+		if($this->isEnabled()){
+			if($player->hasPermission("basichud.user")){
 				$n = strtolower($player->getName());
-				$this->sendPopup[$n] = [ $msg, microtime(true)+$length ];
+				$this->sendPopup[$n] = [$msg, microtime(true) + $length];
 				$msg = $this->getMessage($player);
 			}
 		}
-		if ($msg !== null) $player->sendPopup($msg);
+		if($msg !== null) $player->sendPopup($msg);
 	}
 }
