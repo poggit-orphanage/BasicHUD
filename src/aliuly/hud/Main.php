@@ -8,7 +8,7 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
 use pocketmine\Player;
 use pocketmine\utils\Config;
-use pocketmine\scheduler\PluginTask;
+use pocketmine\scheduler\Task;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
@@ -47,13 +47,13 @@ abstract class StrtrFormat implements Formatter{
 	}
 }
 
-class PopupTask extends PluginTask{
+class PopupTask extends Task{
 	public function __construct(Main $plugin){
-		parent::__construct($plugin);
+		$this->plugin = $plugin;
 	}
 
 	public function getPlugin(){
-		return $this->owner;
+		return $this->plugin;
 	}
 
 	public function onRun(int $currentTick){
@@ -286,7 +286,7 @@ class Main extends PluginBase implements Listener, CommandExecutor{
 			$this->_getVars = function(){
 			};
 		}
-		$this->getServer()->getScheduler()->scheduleRepeatingTask(new PopupTask($this), $cf["ticks"]);
+		$this->getScheduler()->scheduleRepeatingTask(new PopupTask($this), $cf["ticks"]);
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 
