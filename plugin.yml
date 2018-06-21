@@ -1,7 +1,7 @@
 name: BasicHUD
-version: 1.0.6-6
+version: 1.0.7
 main: aliuly\hud\Main
-api: [3.0.0-ALPHA12]
+api: [3.0.0]
 load: POSTWORLD
 website: https://github.com/alejandroliu/pocketmine-plugins/tree/master/BasicHUD
 
