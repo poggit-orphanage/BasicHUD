@@ -32,14 +32,6 @@ abstract class FixedFormat implements Formatter{
 	}
 }
 
-abstract class PhpFormat implements Formatter{
-	static public function formatString(Main $plugin, $format, Player $player){
-		ob_start();
-		eval(stripcslashes("?>" . $format));
-		return ob_get_clean();
-	}
-}
-
 abstract class StrtrFormat implements Formatter{
 	static public function formatString(Main $plugin, $format, Player $player){
 		$vars = $plugin->getVars($player);
@@ -81,9 +73,6 @@ class Main extends PluginBase implements Listener, CommandExecutor{
 	protected $perms_cache;        // Permissions cache
 
 	static public function pickFormatter($format){
-		if(strpos($format, "<?php") !== false || strpos($format, "<?=") !== false){
-			return __NAMESPACE__ . "\\PhpFormat";
-		}
 		if(strpos($format, "{") !== false && strpos($format, "}")){
 			return __NAMESPACE__ . "\\StrtrFormat";
 		}
@@ -274,13 +263,13 @@ class Main extends PluginBase implements Listener, CommandExecutor{
 			$code .= $this->getResourceContents("message-example.php");
 		}
 		$code .= '};';
-		eval(stripcslashes($code));
+			eval($code);
 
 		if(file_exists($this->getDataFolder() . "vars.php")){
 			$code = '$this->_getVars = function($plugin,&$vars,$player){' . "\n" .
 				file_get_contents($this->getDataFolder() . "vars.php") .
 				'};' . "\n";
-			eval(stripcslashes($code));
+			eval($code);
 		}else{
 			// Empty function (this means we do not need to test _getVars)
 			$this->_getVars = function(){
