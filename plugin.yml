@@ -1,5 +1,5 @@
 name: BasicHUD
-version: 1.0.8
+version: 1.0.9
 main: aliuly\hud\Main
 api: [3.0.0]
 load: POSTWORLD
